@@ -1,0 +1,74 @@
+---
+- name: Configure my_app server
+  hosts: web
+  become: yes
+
+  tasks:
+    - name: Update apt
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - git
+          - nginx
+          - docker.io
+        state: present
+
+    - name: Add marzena to docker group
+      user:
+        name: marzena
+        groups: docker
+        append: yes
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Start and enable Nginx
+      systemd:
+        name: nginx
+        enabled: yes
+        state: started
+
+    - name: Configure UFW - allow SSH
+      ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: Configure UFW - allow HTTP
+      ufw:
+        rule: allow
+        port: "80"
+
+    - name: Configure UFW - allow port 8080
+      ufw:
+        rule: allow
+        port: "8080"
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+
+    - name: Clone app from GitHub
+      git:
+        repo: https://github.com/MazPugo/my_app.git
+        dest: /home/marzena/my_app
+        version: main
+      become_user: marzena
+
+    - name: Build Docker image
+      command: docker build -t my_app /home/marzena/my_app
+
+    - name: Run Docker container
+      command: >
+        docker run -d -p 8080:8080
+        --name my_app
+        --restart always
+        my_app
