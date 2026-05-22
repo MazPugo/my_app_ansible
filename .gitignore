@@ -1,4 +1,4 @@
 *.retry
-inventory.ini        # contains your server IP
-ansible.cfg          # contains server details
+inventory.ini
+ansible.cfg
 *.log
