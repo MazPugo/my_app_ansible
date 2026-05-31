@@ -1,0 +1,118 @@
+---
+- name: Update apt
+  apt:
+    update_cache: yes
+  tags:
+    - install
+
+- name: Install required packages
+  apt:
+    name:
+      - python3
+      - python3-pip
+      - python3-venv
+      - git
+      - nginx
+      - docker.io
+    state: present
+  tags:
+    - install
+
+- name: Add marzena to docker group
+  user:
+    name: marzena
+    groups: docker
+    append: yes
+  tags:
+    - install
+
+- name: Start and enable Docker
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+  tags:
+    - install
+
+- name: Start and enable Nginx
+  systemd:
+    name: nginx
+    enabled: yes
+    state: started
+  tags:
+    - install
+
+- name: Configure firewall
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+  loop: "{{ allowed_ports }}"
+  tags:
+    - security
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+  tags:
+    - security
+
+- name: Configure Nginx
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/my_app
+  notify: restart nginx
+  tags:
+    - nginx
+
+- name: Remove default Nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx
+  tags:
+    - nginx
+
+- name: Enable Nginx site
+  file:
+    src: /etc/nginx/sites-available/my_app
+    dest: /etc/nginx/sites-enabled/my_app
+    state: link
+  notify: restart nginx
+  tags:
+    - nginx
+
+- name: Clone app from GitHub
+  git:
+    repo: "{{ github_repo }}"
+    dest: "{{ app_dir }}"
+    version: main
+  become_user: marzena
+  tags:
+    - deploy
+
+- name: Build Docker image
+  command: docker build -t {{ docker_image }} {{ app_dir }}
+  tags:
+    - deploy
+
+- name: Stop existing container
+  command: docker stop {{ app_name }}
+  ignore_errors: yes
+  tags:
+    - deploy
+
+- name: Remove existing container
+  command: docker rm {{ app_name }}
+  ignore_errors: yes
+  tags:
+    - deploy
+
+- name: Run Docker container
+  command: >
+    docker run -d
+    -p {{ app_port }}:{{ app_port }}
+    --name {{ app_name }}
+    --restart always
+    {{ docker_image }}
+  tags:
+    - deploy

@@ -1,4 +1,6 @@
 *.retry
-inventory.ini
+inventory/production/hosts.ini
 ansible.cfg
+.vault_pass
+*.vault_pass
 *.log

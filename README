@@ -1,0 +1,76 @@
+# my_app Ansible
+
+## Overview
+Ansible configuration as code for my_app deployed on DigitalOcean.
+Automates server configuration, Docker deployment and Nginx setup for myappguru.net.
+
+## Architecture
+
+Cloudflare (SSL + DDoS)
+↓
+DigitalOcean Droplet
+↓
+Nginx (reverse proxy)
+↓
+Docker container
+↓
+FastAPI app (my_app)
+
+## Prerequisites
+- Ansible 2.9+
+- Vault password file at ~/.vault_pass
+
+## Project Structure
+my_app_ansible/
+├── inventory/
+│   └── production/
+│       ├── hosts.ini            # production servers (gitignored)
+│       └── group_vars/
+│           ├── all.yml          # public variables
+│           └── vault.yml        # encrypted secrets
+├── roles/
+│   └── my_app/
+│       ├── tasks/
+│       │   └── main.yml         # all tasks
+│       ├── handlers/
+│       │   └── main.yml         # service handlers
+│       ├── defaults/
+│       │   └── main.yml         # default variables
+│       └── templates/
+│           └── nginx.conf.j2    # nginx config template
+├── playbook.yml                 # main playbook
+├── ansible.cfg                  # ansible config (gitignored)
+├── .gitignore
+└── README.md
+
+
+
+## Setup
+
+### 1. Clone the repo
+
+git clone https://github.com/MazPugo/my_app_ansible.git
+cd my_app_ansible
+
+### 2. Create vault password file
+
+echo "your-vault-password" > ~/.vault_pass
+chmod 600 ~/.vault_pass
+
+### 3. Create inventory file
+nano inventory/production/hosts.ini
+
+### 4. Create ansible.cfg
+
+## Usage
+
+### Test connection
+
+ansible web -m ping
+
+### Dry run (check mode)
+ansible-playbook playbook.yml --check
+
+
+### Run full playbook
+ansible-playbook playbook.yml

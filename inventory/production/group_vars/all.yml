@@ -1,0 +1,16 @@
+# Application variables
+app_name: my_app
+app_port: 8080
+app_dir: /home/marzena/my_app
+github_repo: https://github.com/MazPugo/my_app.git
+domain: myappguru.net
+docker_image: my_app
+
+# Firewall ports
+allowed_ports:
+  - "22"
+  - "80"
+  - "443"
+
+# Reference vault variables
+secret_key: "{{ vault_secret_key }}"
