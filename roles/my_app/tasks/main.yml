@@ -61,7 +61,7 @@
     src: nginx.conf.j2
     dest: /etc/nginx/sites-available/my_app
     mode: "0644"
-  notify: restart nginx
+  notify: Restart nginx
   tags:
     - nginx
 
@@ -69,7 +69,7 @@
   ansible.builtin.file:
     path: /etc/nginx/sites-enabled/default
     state: absent
-  notify: restart nginx
+  notify: Restart nginx
   tags:
     - nginx
 
@@ -78,14 +78,14 @@
     src: /etc/nginx/sites-available/my_app
     dest: /etc/nginx/sites-enabled/my_app
     state: link
-  notify: restart nginx
+  notify: Restart nginx
   tags:
     - nginx
 
 - name: Clone app from GitHub
   ansible.builtin.git:
-    repo: "{{ github_repo }}"
-    dest: "{{ app_dir }}"
+    repo: "{{ my_app_github_repo }}"
+    dest: "{{ my_app_dir }}"
     version: main
   become: true
   become_user: marzena
@@ -94,14 +94,14 @@
 
 - name: Build Docker image
   ansible.builtin.command:
-    cmd: docker build -t {{ docker_image }} {{ app_dir }}
+    cmd: docker build -t {{ my_app_docker_image }} {{ my_app_dir }}
   changed_when: true
   tags:
     - deploy
 
 - name: Stop existing container
   ansible.builtin.command:
-    cmd: docker stop {{ app_name }}
+    cmd: docker stop {{ my_app_name }}
   failed_when: false
   changed_when: true
   tags:
@@ -109,7 +109,7 @@
 
 - name: Remove existing container
   ansible.builtin.command:
-    cmd: docker rm {{ app_name }}
+    cmd: docker rm {{ my_app_name }}
   failed_when: false
   changed_when: true
   tags:
@@ -119,10 +119,10 @@
   ansible.builtin.command:
     cmd: >
       docker run -d
-      -p {{ app_port }}:{{ app_port }}
-      --name {{ app_name }}
+      -p {{ my_app_port }}:{{ my_app_port }}
+      --name {{ my_app_name }}
       --restart always
-      {{ docker_image }}
+      {{ my_app_docker_image }}
   changed_when: true
   tags:
     - deploy

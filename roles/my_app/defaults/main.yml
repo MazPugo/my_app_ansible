@@ -1,7 +1,7 @@
 ---
-app_name: my-app
-app_port: 8080
-app_dir: /home/marzena/my_app
-github_repo: https://github.com/MazPugo/my_app.git
-domain: myappguru.net
-docker_image: my_app
+my_app_name: my-app
+my_app_port: 8080
+my_app_dir: /home/marzena/my_app
+my_app_github_repo: https://github.com/MazPugo/my_app.git
+my_app_domain: myappguru.net
+my_app_docker_image: my_app

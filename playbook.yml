@@ -1,6 +1,6 @@
 ---
 - name: Configure my_app server
   hosts: web
-  become: yes
+  become: true
   roles:
     - my_app
